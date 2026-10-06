@@ -1,0 +1,155 @@
+# rubrics.py
+
+POSTER_RUBRICS = {
+    "Poster 1: Healthy Lifestyles": {
+        "max_pages": 2,
+        "general_criteria": [
+            "Maximum 2 sides of A4 paper",
+            "Inclusion of relevant images",
+            "Use of short sentences and bullet points",
+            "Appropriate professional language",
+            "Credible evidence-based references provided"
+        ],
+        "specific_criteria": [
+            {
+                "id": 1,
+                "title": "WHO Definition of Health",
+                "description": "Includes the official World Health Organization definition of health."
+            },
+            {
+                "id": 2,
+                "title": "UK Population Health Implications",
+                "description": "Outlines prevalence and health implications within the UK population."
+            },
+            {
+                "id": 3,
+                "title": "Components of Total Fitness",
+                "description": "Provides an overview of all key components of total fitness."
+            },
+            {
+                "id": 4,
+                "title": "Healthy Lifestyle Behaviours & Benefits",
+                "description": "Covers non-smoking, responsible alcohol use, healthy eating, physical activity, sleep, and stress management."
+            },
+            {
+                "id": 5,
+                "title": "Unhealthy Behaviours & Chronic Health Risks",
+                "description": "Explains unhealthy behaviours and the linked chronic health conditions."
+            },
+            {
+                "id": 6,
+                "title": "Credible Information Sources",
+                "description": "Lists credible sources for help and support (e.g., NHS, Government, Health Foundation)."
+            },
+            {
+                "id": 7,
+                "title": "Supporting Health Professionals",
+                "description": "Lists relevant professionals such as Physiotherapist, Nutritionist, and Sports Massage Therapist."
+            }
+        ]
+    },
+    "Poster 2: The Benefits of Physical Activity": {
+        "max_pages": 2,
+        "general_criteria": [
+            "Maximum 2 sides of A4 paper",
+            "Inclusion of relevant images",
+            "Use of short sentences and bullet points",
+            "Appropriate professional language",
+            "Credible evidence-based references provided"
+        ],
+        "specific_criteria": [
+            {
+                "id": 1,
+                "title": "Chief Medical Officer Guidelines",
+                "description": "Outlines the Chief Medical Officer physical activity guidelines for adults."
+            },
+            {
+                "id": 2,
+                "title": "Health Benefits of Physical Activity",
+                "description": "Summarises the health benefits of regular physical activity and exercise."
+            },
+            {
+                "id": 3,
+                "title": "Prevention of Chronic Health Conditions",
+                "description": "Explains the role physical activity plays in preventing chronic health conditions."
+            },
+            {
+                "id": 4,
+                "title": "Barriers to Exercise & Solutions",
+                "description": "Lists potential barriers to physical activity and practical suggestions to overcome them."
+            },
+            {
+                "id": 5,
+                "title": "Types of Exercise & Benefits",
+                "description": "Provides an overview of different types of exercise and physical activity with their respective benefits."
+            },
+            {
+                "id": 6,
+                "title": "Fitness vs. Health Recommendation Differences",
+                "description": "Clarifies differences between activity recommendations for physical fitness vs. health promotion."
+            },
+            {
+                "id": 7,
+                "title": "Reasons for Temporarily Deferring Exercise",
+                "description": "Identifies medical/safety reasons for temporarily delaying or deferring exercise."
+            },
+            {
+                "id": 8,
+                "title": "Specialist Guidance & Sources",
+                "description": "Details when to seek specialist guidance/support and lists appropriate sources."
+            }
+        ]
+    },
+    "Poster 3: Healthy Eating": {
+        "max_pages": 2,
+        "general_criteria": [
+            "Maximum 2 sides of A4 paper",
+            "Inclusion of relevant images",
+            "Use of short sentences and bullet points",
+            "Appropriate professional language",
+            "Credible evidence-based references provided"
+        ],
+        "specific_criteria": [
+            {
+                "id": 1,
+                "title": "Eatwell Guide Overview",
+                "description": "Provides an overview of the Eatwell guide recommendations."
+            },
+            {
+                "id": 2,
+                "title": "Health Benefits of Healthy Eating",
+                "description": "Summarises the health benefits and importance of healthy eating."
+            },
+            {
+                "id": 3,
+                "title": "Risks of Unhealthy Eating",
+                "description": "Explains the health risks associated with unhealthy diet and eating habits."
+            },
+            {
+                "id": 4,
+                "title": "Healthy Food Swaps",
+                "description": "Lists practical suggestions for making healthy food swaps."
+            },
+            {
+                "id": 5,
+                "title": "Main Nutrients & Food Sources",
+                "description": "Details the main nutrients and example food sources for each."
+            },
+            {
+                "id": 6,
+                "title": "Importance of Hydration",
+                "description": "Explains the importance of hydration for health and exercise."
+            },
+            {
+                "id": 7,
+                "title": "Dietitian Referral Criteria",
+                "description": "Identifies specific individuals who should speak to a dietitian for support."
+            },
+            {
+                "id": 8,
+                "title": "Credible Nutrition Sources",
+                "description": "Lists credible information sources for healthy eating and nutrition evidence."
+            }
+        ]
+    }
+}

@@ -1,0 +1,191 @@
+# app.py
+import streamlit as st
+import json
+import base64
+import openai
+from rubrics import POSTER_RUBRICS
+from utils import process_uploaded_file
+
+st.set_page_config(
+    page_title="Student Work Marking Assistant",
+    page_icon="📝",
+    layout="wide"
+)
+
+st.title("📝 Student Work Marking App")
+st.markdown("Automated evaluation for Fitness Professional Poster Submissions against course criteria.")
+
+# Sidebar - Settings & API Key
+st.sidebar.header("⚙️ Configuration")
+api_key = st.sidebar.text_input("OpenAI API Key", type="password")
+selected_poster = st.sidebar.selectbox("Select Poster Assignment", list(POSTER_RUBRICS.keys()))
+
+rubric = POSTER_RUBRICS[selected_poster]
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("📋 Criteria Overview")
+st.sidebar.write(f"**Max Pages allowed:** {rubric['max_pages']} A4 sides")
+for idx, c in enumerate(rubric["specific_criteria"], 1):
+    st.sidebar.write(f"**{idx}.** {c['title']}")
+
+# Main Upload Area
+st.subheader("1. Upload Student Work")
+uploaded_files = st.file_uploader(
+    "Upload PDF, Docx, or Image (PNG/JPG)",
+    type=["pdf", "png", "jpg", "jpeg"],
+    accept_multiple_files=False
+)
+
+def evaluate_submission(api_key, poster_name, rubric_data, processed_doc):
+    """
+    Sends processed submission to GPT-4o for structural & criteria evaluation.
+    """
+    client = openai.OpenAI(api_key=api_key)
+    
+    prompt = f"""
+    You are an expert fitness professional assessor marking student submissions for the assignment: "{poster_name}".
+    
+    ASSIGNMENT RULES & CRITERIA:
+    - Maximum Pages Allowed: {rubric_data['max_pages']} sides of A4.
+    - Actual Page Count Detected: {processed_doc['page_count']} pages.
+    - Total Visual Images Detected: {processed_doc['image_count']} images.
+    
+    General Formatting Requirements to check:
+    1. Maximum 2 sides of A4 paper.
+    2. Inclusion of relevant images.
+    3. Use of short sentences and bullet points.
+    4. Appropriate professional language.
+    5. Credible evidence-based references provided.
+    
+    Specific Required Topics to Evaluate:
+    {json.dumps(rubric_data['specific_criteria'], indent=2)}
+    
+    STUDENT TEXT EXTRACT:
+    {processed_doc['text']}
+    
+    Please return a JSON response with the following structure ONLY:
+    {{
+        "page_limit_met": true/false,
+        "images_present_and_relevant": true/false,
+        "general_formatting": {{
+            "bullet_points_used": true/false,
+            "appropriate_language": true/false,
+            "references_included": true/false,
+            "notes": "Brief comment on structure and general layout."
+        }},
+        "criteria_evaluations": [
+            {{
+                "id": 1,
+                "title": "Criteria Title",
+                "status": "Met" or "Partially Met" or "Not Met",
+                "evidence_found": "Quote or brief description of what student included.",
+                "what_needs_to_be_done": "Actionable feedback on what is missing or needs improvement."
+            }}
+        ],
+        "overall_summary": "Summary of overall submission quality and key recommendations."
+    }}
+    """
+
+    messages = [
+        {"role": "system", "content": "You are a precise educational grading assistant. Return strict JSON format."},
+        {"role": "user", "content": prompt}
+    ]
+
+    # Add images if available for multimodal analysis
+    for img_bytes in processed_doc["images"][:2]: # First 2 pages max
+        base64_image = base64.b64encode(img_bytes).decode('utf-8')
+        messages.append({
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Poster image page:"},
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
+            ]
+        })
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        response_format={"type": "json_object"},
+        temperature=0.2
+    )
+
+    return json.loads(response.choices[0].message.content)
+
+if uploaded_files:
+    st.info(f"File uploaded: **{uploaded_files.name}**")
+    
+    if st.button("🚀 Mark Submission", type="primary"):
+        if not api_key:
+            st.error("Please enter your OpenAI API key in the sidebar.")
+        else:
+            with st.spinner("Analyzing document and evaluating against rubric criteria..."):
+                processed_doc = process_uploaded_file(uploaded_files)
+                result = evaluate_submission(api_key, selected_poster, rubric, processed_doc)
+                
+                st.markdown("---")
+                st.header("📊 Marking Overview & Feedback Report")
+                
+                # Top Level Status Cards
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    if result.get("page_limit_met") and processed_doc["page_count"] <= 2:
+                        st.success(f"📄 Pages: {processed_doc['page_count']} / 2 (Met)")
+                    else:
+                        st.error(f"📄 Pages: {processed_doc['page_count']} / 2 (Exceeded)")
+                
+                with col2:
+                    if result.get("images_present_and_relevant"):
+                        st.success("🖼️ Images: Included")
+                    else:
+                        st.warning("🖼️ Images: Missing / Unclear")
+                        
+                with col3:
+                    ref_status = result.get("general_formatting", {}).get("references_included")
+                    if ref_status:
+                        st.success("📚 References: Included")
+                    else:
+                        st.error("📚 References: Missing")
+
+                with col4:
+                    bullet_status = result.get("general_formatting", {}).get("bullet_points_used")
+                    if bullet_status:
+                        st.success("✍️ Formatting: Concise/Bullets")
+                    else:
+                        st.warning("✍️ Formatting: Text Dense")
+
+                # General Structure Comments
+                st.subheader("📌 General Formatting & Layout Checklist")
+                st.info(result.get("general_formatting", {}).get("notes", "No layout notes available."))
+
+                # Detailed Specific Criteria Table
+                st.subheader("🎯 Specific Criteria Evaluation Breakdown")
+                
+                evals = result.get("criteria_evaluations", [])
+                
+                met_count = sum(1 for item in evals if item["status"] == "Met")
+                total_count = len(evals)
+                
+                st.progress(met_count / total_count, text=f"Criteria Completion: {met_count} of {total_count} fully met.")
+                
+                for item in evals:
+                    status = item["status"]
+                    if status == "Met":
+                        badge = "✅ **MET**"
+                    elif status == "Partially Met":
+                        badge = "⚠️ **PARTIALLY MET**"
+                    else:
+                        badge = "❌ **NOT MET**"
+
+                    with st.expander(f"{badge} — Criterion {item['id']}: {item['title']}"):
+                        col_a, col_b = st.columns(2)
+                        with col_a:
+                            st.markdown("**What Has Been Met / Evidence Found:**")
+                            st.write(item.get("evidence_found", "None detected."))
+                        with col_b:
+                            st.markdown("**What Still Needs To Be Done:**")
+                            st.write(item.get("what_needs_to_be_done", "No further action needed."))
+
+                # Overall Feedback Summary
+                st.subheader("📝 Overall Summary & Action Plan")
+                st.success(result.get("overall_summary", "Evaluation complete."))

@@ -1,0 +1,43 @@
+# utils.py
+import io
+import fitz  # PyMuPDF
+from PIL import Image
+
+def process_uploaded_file(uploaded_file):
+    """
+    Extracts pages, text, and images from uploaded PDF, Image, or Docx files.
+    Returns: dict containing page_count, image_count, full_text, and image_bytes list.
+    """
+    file_type = uploaded_file.name.split('.')[-1].lower()
+    page_count = 1
+    image_count = 0
+    extracted_text = ""
+    images = []
+
+    if file_type == "pdf":
+        doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+        page_count = len(doc)
+        for page_num in range(page_count):
+            page = doc[page_num]
+            extracted_text += f"\n--- Page {page_num + 1} ---\n" + page.get_text()
+            img_list = page.get_images()
+            image_count += len(img_list)
+            
+            # Render page as image for multimodal evaluation
+            pix = page.get_pixmap()
+            img_bytes = pix.tobytes("png")
+            images.append(img_bytes)
+
+    elif file_type in ["png", "jpg", "jpeg"]:
+        page_count = 1
+        image_bytes = uploaded_file.read()
+        images.append(image_bytes)
+        image_count = 1
+        extracted_text = "[Image submission processed]"
+
+    return {
+        "page_count": page_count,
+        "image_count": image_count,
+        "text": extracted_text,
+        "images": images
+    }
